@@ -647,10 +647,9 @@ footer { text-align: center; font-family: var(--typemaskin); color: var(--kort-d
   let megNamn = '';
 
   // ---------- Lagring på eininga (fungerer ikkje overalt, så alt er pakka inn) ----------
-  // jb_pin: koden. jb_meg: { ref, epost } etter påmelding, så sida kjenner att gjesten neste gong.
+  // PIN-koden blir ikkje lagra: sida spør kvar gong. fjern() ryddar bort kodar som eldre versjonar lagra.
+  // jb_meg: { ref, epost } etter påmelding, så sida kjenner att gjesten når koden er skriven inn.
   const lagra = {
-    hent() { try { return localStorage.getItem('jb_pin') || ''; } catch (e) { return ''; } },
-    set(v) { try { localStorage.setItem('jb_pin', v); } catch (e) {} },
     fjern() { try { localStorage.removeItem('jb_pin'); } catch (e) {} },
     hentMeg() { try { const m = JSON.parse(localStorage.getItem('jb_meg') || 'null'); return m && m.ref && m.epost ? m : null; } catch (e) { return null; } },
     setMeg(m) { try { localStorage.setItem('jb_meg', JSON.stringify({ ref: m.ref, epost: m.epost })); } catch (e) {} },
@@ -745,7 +744,7 @@ footer { text-align: center; font-family: var(--typemaskin); color: var(--kort-d
         $('#pin').select();
         return;
       }
-      pin = p; config = svar.config; lagra.set(p);
+      pin = p; config = svar.config;
       lesData(svar);
       visSida();
     } catch (e) {
@@ -1344,9 +1343,8 @@ footer { text-align: center; font-family: var(--typemaskin); color: var(--kort-d
   });
 
   // ---------- Start ----------
-  const p0 = lagra.hent();
-  if (p0) opne(p0, true);
-  else $('#pin').focus();
+  lagra.fjern();
+  $('#pin').focus();
 })();
 </script>
 </body>
