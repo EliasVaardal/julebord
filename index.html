@@ -1,0 +1,623 @@
+<!DOCTYPE html>
+<html lang="nn">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<title>Julebord 2026</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Courier+Prime:wght@400;700&family=Atkinson+Hyperlegible:wght@400;700&display=swap" rel="stylesheet">
+<style>
+/* ---------- Fargar: lys modus ---------- */
+:root {
+  --kort-bg: #F6F6F3;      /* bakgrunn bak dei raude korta */
+  --kort-tekst: #B00E17;   /* kortraud */
+  --kort-dim: #5C5C5C;
+  --papir: #FCFDFB;        /* påmeldingsarket */
+  --linje: #C9D9EA;        /* blå linjer på arket */
+  --marg: #D9545B;         /* raud marglinje */
+  --blekk: #16213D;        /* kulepennblå tekst */
+  --blekk-dim: #4C566A;
+  --felt: #FFFFFF;
+  --ok: #1D6B3A;
+  --feil: #A3121B;
+  --fokus: #2F6FD0;
+  --rad: 1.75rem;
+  --typemaskin: "Courier Prime", "Courier New", Courier, monospace;
+  --tekst: "Atkinson Hyperlegible", "Segoe UI", system-ui, sans-serif;
+  color-scheme: light;
+}
+/* ---------- Fargar: mørk modus ---------- */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --kort-bg: #000000;
+    --kort-tekst: #E2161F;
+    --kort-dim: #9C9C9C;
+    --papir: #DCE1DC;
+    --linje: #A3B8CC;
+    --marg: #C23A42;
+    --blekk: #121B33;
+    --blekk-dim: #45506A;
+    --felt: #EEF1EE;
+    --ok: #17602F;
+    --feil: #9A0F17;
+    --fokus: #5B9BFF;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --kort-bg: #000000; --kort-tekst: #E2161F; --kort-dim: #9C9C9C;
+  --papir: #DCE1DC; --linje: #A3B8CC; --marg: #C23A42; --blekk: #121B33; --blekk-dim: #45506A;
+  --felt: #EEF1EE; --ok: #17602F; --feil: #9A0F17; --fokus: #5B9BFF; color-scheme: dark;
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+html { scroll-padding-top: env(safe-area-inset-top, 0px); -webkit-text-size-adjust: 100%; }
+body {
+  margin: 0;
+  background: var(--kort-bg);
+  color: var(--kort-tekst);
+  font-family: var(--tekst);
+  font-size: 1.0625rem;
+  line-height: 1.55;
+  padding-top: env(safe-area-inset-top, 0px);
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+:focus-visible { outline: 3px solid var(--fokus); outline-offset: 3px; }
+[hidden] { display: none !important; }
+
+/* ---------- Raude tekstkort (filmspråket frå del 1) ---------- */
+.kort {
+  min-height: 70svh;
+  display: grid;
+  place-items: center;
+  padding: 4rem 1.5rem;
+  text-align: center;
+  font-family: var(--typemaskin);
+}
+.kort p { margin: 0 auto; max-width: 24ch; font-size: clamp(1.3rem, 5.2vw, 2rem); line-height: 1.45; }
+.kort .liten { font-size: 1rem; color: var(--kort-dim); max-width: 34ch; margin-top: 1.5rem; }
+
+/* ---------- PIN-port ---------- */
+#port { min-height: 100svh; }
+#port form { display: grid; gap: 1.25rem; justify-items: center; }
+#port label { font-size: clamp(1.3rem, 5.2vw, 2rem); }
+#pin {
+  font-family: var(--typemaskin);
+  font-size: 2rem;
+  letter-spacing: 0.6em;
+  text-align: center;
+  width: 9.5ch;
+  padding: 0.4rem 0 0.4rem 0.6em;
+  background: transparent;
+  color: var(--kort-tekst);
+  border: 0;
+  border-bottom: 2px solid var(--kort-tekst);
+  border-radius: 0;
+}
+#pin::placeholder { color: var(--kort-dim); opacity: .6; }
+.knapp-kort {
+  font-family: var(--typemaskin);
+  font-size: 1.1rem;
+  background: transparent;
+  color: var(--kort-tekst);
+  border: 2px solid var(--kort-tekst);
+  padding: 0.6rem 1.6rem;
+  cursor: pointer;
+}
+.knapp-kort:hover { background: var(--kort-tekst); color: var(--kort-bg); }
+#port-melding { min-height: 1.5em; color: var(--kort-dim); font-family: var(--typemaskin); }
+
+/* ---------- Opningskort med nedteljing ---------- */
+#opning { min-height: 100svh; }
+#opning .typa { white-space: pre-wrap; }
+#nedteljing { margin-top: 2.25rem; font-size: 1.15rem; color: var(--kort-dim); max-width: none; font-variant-numeric: tabular-nums; }
+#nedteljing b { color: var(--kort-tekst); font-weight: 400; }
+#opning .knapp-kort { margin-top: 2.5rem; display: inline-block; text-decoration: none; }
+
+/* ---------- Påmeldingsarket ---------- */
+.ark-flate { padding: 0 0.75rem 3rem; }
+.ark {
+  position: relative;
+  max-width: 40rem;
+  margin: 0 auto;
+  background-color: var(--papir);
+  background-image: linear-gradient(to bottom, transparent calc(var(--rad) - 1px), var(--linje) calc(var(--rad) - 1px));
+  background-size: 100% var(--rad);
+  background-position: 0 2.5rem;
+  color: var(--blekk);
+  color-scheme: light;   /* skjemaelement på papiret skal alltid vere lyse */
+  padding: 2.5rem 1.25rem 2.5rem 3.25rem;
+  box-shadow: 0 1px 0 rgba(0,0,0,.08), 0 18px 40px -24px rgba(0,0,0,.55);
+}
+.ark::before {
+  content: "";
+  position: absolute; top: 0; bottom: 0; left: 2.25rem;
+  border-left: 2px solid var(--marg);
+}
+.ark h2 {
+  font-family: var(--typemaskin);
+  font-weight: 700;
+  font-size: 1.6rem;
+  line-height: var(--rad);
+  margin: 0 0 var(--rad);
+}
+.ark p { margin: 0 0 1rem; max-width: 60ch; }
+.ark .dim { color: var(--blekk-dim); font-size: 0.95rem; }
+
+.fakta { display: grid; grid-template-columns: 4.5rem 1fr; gap: 0.35rem 1rem; margin: 0 0 2rem; }
+.fakta dt { font-family: var(--typemaskin); font-weight: 700; }
+.fakta dd { margin: 0; }
+
+.felt { margin-bottom: 1.4rem; }
+.felt > label, .felt > legend { display: block; font-weight: 700; margin-bottom: 0.3rem; }
+.felt .hjelp { display: block; font-size: 0.9rem; color: var(--blekk-dim); margin-bottom: 0.4rem; }
+fieldset.felt { border: 0; padding: 0; margin: 0 0 1.4rem; }
+input[type="text"], input[type="email"], textarea, select {
+  width: 100%;
+  font: inherit;
+  color: var(--blekk);
+  background: var(--felt);
+  border: 1.5px solid var(--blekk-dim);
+  border-radius: 3px;
+  padding: 0.6rem 0.7rem;
+}
+textarea { min-height: 6rem; resize: vertical; }
+.val { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+.val label {
+  display: inline-flex; align-items: center; gap: 0.5rem;
+  background: var(--felt);
+  border: 1.5px solid var(--blekk-dim);
+  border-radius: 3px;
+  padding: 0.55rem 0.8rem;
+  cursor: pointer;
+  font-weight: 400;
+}
+.val input { accent-color: var(--marg); width: 1.1rem; height: 1.1rem; margin: 0; }
+.val label:has(input:checked) { border-color: var(--blekk); box-shadow: inset 0 0 0 1px var(--blekk); }
+
+.knapp {
+  font-family: var(--typemaskin);
+  font-weight: 700;
+  font-size: 1.1rem;
+  background: var(--blekk);
+  color: var(--papir);
+  border: 0;
+  border-radius: 3px;
+  padding: 0.8rem 1.6rem;
+  cursor: pointer;
+}
+.knapp[disabled] { opacity: .55; cursor: progress; }
+.melding { margin-top: 1rem; padding: 0.9rem 1rem; border-left: 4px solid currentColor; background: var(--felt); }
+.melding.ok { color: var(--ok); }
+.melding.feil { color: var(--feil); }
+.melding strong { font-family: var(--typemaskin); }
+.honning { position: absolute; left: -9999px; width: 1px; height: 1px; overflow: hidden; }
+
+/* ---------- Program ---------- */
+.program { list-style: none; padding: 0; margin: 2rem auto 0; text-align: left; max-width: 26rem; font-size: 1.1rem; }
+.program li { display: grid; grid-template-columns: 4.5rem 1fr; padding: 0.35rem 0; color: var(--kort-tekst); }
+.program time, .program .tid { color: var(--kort-dim); }
+.sladd { background: var(--kort-tekst); color: transparent; user-select: none; border-radius: 1px; }
+
+/* ---------- Spørsmål ---------- */
+.spm dt { font-weight: 700; margin-top: 1.1rem; }
+.spm dd { margin: 0.2rem 0 0; }
+
+footer { text-align: center; font-family: var(--typemaskin); color: var(--kort-dim); font-size: 0.85rem; padding: 0 1rem 2.5rem; }
+
+@media (min-width: 40rem) {
+  .ark { padding: 3rem 3rem 3rem 5rem; }
+  .ark::before { left: 3.5rem; }
+}
+@media (prefers-reduced-motion: reduce) {
+  * { scroll-behavior: auto !important; }
+}
+</style>
+</head>
+<body>
+
+<!-- =====================================================================
+     INNSTILLINGAR
+     API_URL: lim inn nettapp-URL-en frå Apps Script (slutter på /exec).
+     Så lenge API_URL er tom, køyrer sida i demomodus med PIN 2812
+     og lagrar ingenting.
+     ===================================================================== -->
+<script>
+  const API_URL = '';
+  const DEMO = {
+    pin: '2812',
+    config: {
+      namn: 'Julebord 2026',
+      start: '2026-12-28T17:00:00Z',          // 18:00 norsk tid
+      stad: 'Verkstaden',
+      prisMed: 400,
+      prisUtan: 100,
+      pameldingsfrist: '2026-12-04T22:59:00Z',
+      betalingsfrist: '2026-12-11T22:59:00Z',
+      kontakt: 'Elias',
+      okonomi: 'Kjartan'
+    }
+  };
+</script>
+
+<!-- PIN-port -->
+<section id="port" class="kort" aria-labelledby="pin-tittel">
+  <form id="pin-skjema" autocomplete="off">
+    <label id="pin-tittel" for="pin">Skriv inn koden du fekk.</label>
+    <input id="pin" name="pin" type="text" inputmode="numeric" pattern="[0-9]*" maxlength="8" placeholder="····" required>
+    <button class="knapp-kort" type="submit">Opne</button>
+    <p id="port-melding" role="status" aria-live="polite"></p>
+  </form>
+</section>
+
+<main id="innhald" hidden>
+
+  <!-- Opningskortet -->
+  <section id="opning" class="kort" aria-labelledby="opning-tekst">
+    <div>
+      <p id="opning-tekst"><span class="typa" aria-hidden="true"></span><span class="lesar" style="position:absolute;left:-9999px"></span></p>
+      <p id="nedteljing" role="timer" aria-live="off"></p>
+      <a class="knapp-kort" href="#pamelding">Meld deg på</a>
+    </div>
+  </section>
+
+  <!-- Påmelding -->
+  <div class="ark-flate">
+    <section class="ark" id="pamelding" aria-labelledby="pamelding-tittel">
+      <h2 id="pamelding-tittel">Påmelding</h2>
+      <dl class="fakta">
+        <dt>Når</dt><dd id="f-naar"></dd>
+        <dt>Kvar</dt><dd id="f-kvar"></dd>
+        <dt>Pris</dt><dd id="f-pris"></dd>
+        <dt>Frist</dt><dd id="f-frist"></dd>
+      </dl>
+
+      <form id="pamelding-skjema" novalidate>
+        <div class="felt">
+          <label for="namn">Namn</label>
+          <span class="hjelp" id="namn-hjelp">Fornamn og etternamn, så vi finn deg når du betaler.</span>
+          <input id="namn" name="namn" type="text" autocomplete="name" required aria-describedby="namn-hjelp">
+        </div>
+        <div class="felt">
+          <label for="epost">E-post</label>
+          <span class="hjelp" id="epost-hjelp">Her kjem stadfesting, betalingsinfo og kalenderinvitasjon.</span>
+          <input id="epost" name="epost" type="email" autocomplete="email" required aria-describedby="epost-hjelp">
+        </div>
+        <fieldset class="felt">
+          <legend>Kjem du?</legend>
+          <div class="val">
+            <label><input type="radio" name="kjem" value="Ja" checked> Ja, eg kjem</label>
+            <label><input type="radio" name="kjem" value="Nei"> Nei, meld meg av</label>
+          </div>
+        </fieldset>
+        <fieldset class="felt" id="mat-felt">
+          <legend>Vil du ha mat?</legend>
+          <div class="val">
+            <label><input type="radio" name="mat" value="Ja" checked> <span id="mat-ja">Ja, med mat</span></label>
+            <label><input type="radio" name="mat" value="Nei"> <span id="mat-nei">Nei, berre festen</span></label>
+          </div>
+        </fieldset>
+        <div class="felt" id="allergi-felt">
+          <label for="allergi">Allergiar eller kosthald</label>
+          <span class="hjelp">Valfritt. Går berre til den som bestiller mat.</span>
+          <input id="allergi" name="allergi" type="text" maxlength="300">
+        </div>
+        <div class="honning" aria-hidden="true">
+          <label for="nettside">La dette feltet stå tomt</label>
+          <input id="nettside" name="nettside" type="text" tabindex="-1" autocomplete="off">
+        </div>
+        <button class="knapp" type="submit" id="pamelding-knapp">Meld meg på</button>
+        <p class="dim" style="margin-top:.9rem">Har du meldt deg på før? Send skjemaet på nytt med same e-post, så blir svaret ditt oppdatert.</p>
+        <div id="pamelding-melding" role="status" aria-live="polite"></div>
+      </form>
+    </section>
+  </div>
+
+  <!-- Program (endre lista når programmet er klart) -->
+  <section class="kort" aria-labelledby="program-tittel">
+    <div>
+      <p id="program-tittel">Følgende er bekreftet.</p>
+      <ol class="program">
+        <li><span class="tid">18:00</span><span>Dørene opnar</span></li>
+        <li><span class="tid">19:00</span><span>Mat</span></li>
+        <li><span class="tid">21:00</span><span>Premiere: julebordfilmen</span></li>
+        <li><span class="tid">22:00</span><span>Beer pong-turnering</span></li>
+        <li><span class="tid">??:??</span><span><span class="sladd">hemmeleg punkt</span> <span class="sladd">heilt</span></span></li>
+      </ol>
+      <p class="liten">Resten av programmet er under etterforsking.</p>
+    </div>
+  </section>
+
+  <!-- Tips -->
+  <div class="ark-flate">
+    <section class="ark" aria-labelledby="tips-tittel">
+      <h2 id="tips-tittel">Tips til komiteen</h2>
+      <p>Idé til ein aktivitet, musikk eller mat, eller noko vi bør gjere annleis enn i fjor? Skriv det her.</p>
+      <form id="tips-skjema" novalidate>
+        <div class="felt">
+          <label for="kategori">Kva gjeld det?</label>
+          <select id="kategori" name="kategori">
+            <option>Aktivitet</option>
+            <option>Mat og drikke</option>
+            <option>Musikk</option>
+            <option>Anna</option>
+          </select>
+        </div>
+        <div class="felt">
+          <label for="tips-tekst">Tipset ditt</label>
+          <textarea id="tips-tekst" name="tekst" maxlength="1000" required></textarea>
+        </div>
+        <div class="felt">
+          <label for="tips-namn">Namn</label>
+          <span class="hjelp">Valfritt. La det stå tomt om du vil vere anonym.</span>
+          <input id="tips-namn" name="namn" type="text" maxlength="80">
+        </div>
+        <div class="honning" aria-hidden="true">
+          <input name="nettside" type="text" tabindex="-1" autocomplete="off">
+        </div>
+        <button class="knapp" type="submit" id="tips-knapp">Send tips</button>
+        <div id="tips-melding" role="status" aria-live="polite"></div>
+      </form>
+    </section>
+  </div>
+
+  <!-- Spørsmål -->
+  <div class="ark-flate">
+    <section class="ark" aria-labelledby="spm-tittel">
+      <h2 id="spm-tittel">Spørsmål</h2>
+      <dl class="spm">
+        <dt>Kan eg ta med nokon?</dt>
+        <dd>Send melding til <span class="kontakt"></span> først.</dd>
+        <dt>Kan eg endre svaret?</dt>
+        <dd>Ja. Send skjemaet på nytt med same e-post.</dd>
+        <dt>Kva om eg ikkje kan likevel?</dt>
+        <dd>Vel «Nei, meld meg av» i skjemaet. Har du betalt, sender <span class="okonomi"></span> pengane tilbake.</dd>
+        <dt>Eg fekk ingen e-post.</dt>
+        <dd>Sjekk søppelposten. Finn du han ikkje der heller, send melding til <span class="kontakt"></span>.</dd>
+        <dt>Kvifor ikkje Facebook-arrangement?</dt>
+        <dd>Fordi varslingane aldri kom fram.</dd>
+      </dl>
+    </section>
+  </div>
+
+  <section class="kort" aria-label="Avsluttande kort">
+    <p>Hører du stemmen din fra skogen den kvelden: ikke svar.</p>
+  </section>
+
+  <footer>Julebordkomiteen 2026</footer>
+</main>
+
+<script>
+(function () {
+  const LOCALE = ['nn-NO', 'nb-NO'];
+  const TZ = 'Europe/Oslo';
+  const fmtDagDato = new Intl.DateTimeFormat(LOCALE, { weekday: 'long', day: 'numeric', month: 'long', timeZone: TZ });
+  const fmtKort = new Intl.DateTimeFormat(LOCALE, { day: 'numeric', month: 'long', timeZone: TZ });
+  const fmtKl = new Intl.DateTimeFormat(LOCALE, { hour: '2-digit', minute: '2-digit', timeZone: TZ });
+  const fmtBokmaal = new Intl.DateTimeFormat('nb-NO', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric', timeZone: TZ });
+  const kr = n => Number(n).toLocaleString('nb-NO') + ' kr';
+  const $ = s => document.querySelector(s);
+
+  let pin = '';
+  let config = null;
+
+  // ---------- Lagring av PIN (fungerer ikkje overalt, så alt er pakka inn) ----------
+  const lagra = {
+    hent() { try { return localStorage.getItem('jb_pin') || ''; } catch (e) { return ''; } },
+    set(v) { try { localStorage.setItem('jb_pin', v); } catch (e) {} },
+    fjern() { try { localStorage.removeItem('jb_pin'); } catch (e) {} }
+  };
+
+  // ---------- API ----------
+  async function hentConfig(p) {
+    if (!API_URL) return p === DEMO.pin ? { ok: true, config: DEMO.config } : { ok: false, feil: 'feil' };
+    const r = await fetch(API_URL + '?action=config&pin=' + encodeURIComponent(p));
+    return r.json();
+  }
+  async function send(data) {
+    if (!API_URL) {
+      await new Promise(r => setTimeout(r, 500));
+      if (data.type === 'tips') return { ok: true };
+      const belop = data.kjem === 'Nei' ? 0 : (data.mat === 'Ja' ? DEMO.config.prisMed : DEMO.config.prisUtan);
+      return { ok: true, ref: 'JB-000', belop, ny: true, kjem: data.kjem, mailOk: true, demo: true };
+    }
+    const r = await fetch(API_URL, { method: 'POST', body: JSON.stringify(Object.assign({ pin }, data)) });
+    return r.json();
+  }
+  const feiltekst = {
+    feil: 'Feil kode. Sjekk meldinga du fekk.',
+    sperra: 'For mange forsøk. Prøv igjen om ti minutt.',
+    namn: 'Skriv inn namnet ditt.',
+    epost: 'E-postadressa ser ikkje rett ut.',
+    tips: 'Skriv litt meir i tipset.'
+  };
+
+  // ---------- PIN-port ----------
+  async function opne(p, stille) {
+    const melding = $('#port-melding');
+    if (!stille) melding.textContent = 'Sjekkar koden …';
+    try {
+      const svar = await hentConfig(p);
+      if (!svar.ok) {
+        if (stille) { lagra.fjern(); melding.textContent = ''; return; }
+        melding.textContent = feiltekst[svar.feil] || feiltekst.feil;
+        $('#pin').select();
+        return;
+      }
+      pin = p; config = svar.config; lagra.set(p);
+      visSida();
+    } catch (e) {
+      melding.textContent = 'Fekk ikkje kontakt. Sjekk nettet og prøv igjen.';
+    }
+  }
+  $('#pin-skjema').addEventListener('submit', e => { e.preventDefault(); opne($('#pin').value.trim(), false); });
+
+  // ---------- Fyll sida ----------
+  function stor(s) { return s.charAt(0).toUpperCase() + s.slice(1); }
+
+  function visSida() {
+    const start = new Date(config.start);
+    document.title = config.namn;
+    $('#port').hidden = true;
+    $('#innhald').hidden = false;
+
+    const opning = stor(fmtBokmaal.format(start)) + ' vil rundt 50 personer bli observert på ' + config.stad.toLowerCase() + '.';
+    $('#opning-tekst .lesar').textContent = opning;
+    skriv($('#opning-tekst .typa'), opning);
+
+    $('#f-naar').textContent = stor(fmtDagDato.format(start)) + ' kl. ' + fmtKl.format(start);
+    $('#f-kvar').textContent = config.stad;
+    $('#f-pris').textContent = kr(config.prisMed) + ' med mat, ' + kr(config.prisUtan) + ' utan mat';
+    $('#f-frist').textContent = 'Meld deg på innan ' + fmtKort.format(new Date(config.pameldingsfrist)) +
+      ' og betal innan ' + fmtKort.format(new Date(config.betalingsfrist)) + '. Påmeldinga er bindande når du har betalt.';
+    $('#mat-ja').textContent = 'Ja, med mat (' + kr(config.prisMed) + ')';
+    $('#mat-nei').textContent = 'Nei, berre festen (' + kr(config.prisUtan) + ')';
+    document.querySelectorAll('.kontakt').forEach(el => el.textContent = config.kontakt);
+    document.querySelectorAll('.okonomi').forEach(el => el.textContent = config.okonomi);
+
+    tel(start);
+    setInterval(() => tel(start), 1000);
+  }
+
+  // Éin skrivemaskin-effekt på opningskortet. Hoppar over ved redusert rørsle.
+  function skriv(el, tekst) {
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) { el.textContent = tekst; return; }
+    let i = 0;
+    el.textContent = '';
+    const steg = () => {
+      el.textContent = tekst.slice(0, ++i);
+      if (i < tekst.length) setTimeout(steg, tekst[i - 1] === '.' ? 420 : 38);
+    };
+    steg();
+  }
+
+  // ---------- Nedteljing ----------
+  const to = n => String(n).padStart(2, '0');
+  function tel(start) {
+    const ms = start - Date.now();
+    const el = $('#nedteljing');
+    if (ms <= 0) {
+      el.textContent = ms > -12 * 3600 * 1000 ? 'Det er i kveld.' : 'Takk for i år.';
+      return;
+    }
+    const s = Math.floor(ms / 1000);
+    const d = Math.floor(s / 86400), t = Math.floor(s % 86400 / 3600), m = Math.floor(s % 3600 / 60), sek = s % 60;
+    el.innerHTML = '';
+    el.append('Om ');
+    const b = document.createElement('b');
+    b.textContent = d + (d === 1 ? ' dag' : ' dagar') + ' og ' + to(t) + ':' + to(m) + ':' + to(sek);
+    el.append(b, '.');
+  }
+
+  // ---------- Påmelding ----------
+  const pSkjema = $('#pamelding-skjema');
+  function oppdaterKjem() {
+    const nei = pSkjema.kjem.value === 'Nei';
+    $('#mat-felt').hidden = nei;
+    $('#allergi-felt').hidden = nei;
+    $('#pamelding-knapp').textContent = nei ? 'Meld meg av' : 'Meld meg på';
+  }
+  pSkjema.addEventListener('change', e => { if (e.target.name === 'kjem') oppdaterKjem(); });
+
+  function vis(boks, type, nodar) {
+    boks.innerHTML = '';
+    const div = document.createElement('div');
+    div.className = 'melding ' + type;
+    nodar.forEach(n => div.append(n));
+    boks.append(div);
+  }
+  function p(...delar) {
+    const el = document.createElement('p');
+    el.style.margin = '0 0 .4rem';
+    delar.forEach(d => {
+      if (d && d.sterk) { const s = document.createElement('strong'); s.textContent = d.sterk; el.append(s); }
+      else el.append(d);
+    });
+    return el;
+  }
+
+  pSkjema.addEventListener('submit', async e => {
+    e.preventDefault();
+    const boks = $('#pamelding-melding');
+    const knapp = $('#pamelding-knapp');
+    const data = {
+      type: 'pamelding',
+      namn: pSkjema.namn.value.trim(),
+      epost: pSkjema.epost.value.trim(),
+      kjem: pSkjema.kjem.value,
+      mat: pSkjema.mat.value,
+      allergi: pSkjema.allergi.value.trim(),
+      nettside: pSkjema.nettside.value
+    };
+    if (data.namn.length < 2) { vis(boks, 'feil', [p(feiltekst.namn)]); pSkjema.namn.focus(); return; }
+    if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(data.epost)) { vis(boks, 'feil', [p(feiltekst.epost)]); pSkjema.epost.focus(); return; }
+
+    knapp.disabled = true;
+    const tekst = knapp.textContent;
+    knapp.textContent = 'Sender …';
+    try {
+      const svar = await send(data);
+      if (!svar.ok) {
+        vis(boks, 'feil', [p(feiltekst[svar.feil] || ('Påmeldinga gjekk ikkje gjennom. Prøv igjen, eller send melding til ' + config.kontakt + '.'))]);
+        return;
+      }
+      const linjer = [];
+      if (svar.kjem === 'Nei') {
+        linjer.push(p('Du er meldt av. Har du betalt, sender ' + config.okonomi + ' pengane tilbake.'));
+      } else {
+        linjer.push(p(svar.ny ? 'Du er påmeld. Referansen din er ' : 'Svaret ditt er oppdatert. Referansen din er ', { sterk: svar.ref }, '.'));
+        linjer.push(p('Betal ' + kr(svar.belop) + ' innan ' + fmtKort.format(new Date(config.betalingsfrist)) +
+          ' og skriv referansen i Vipps-meldinga. Kven du skal betale til, står i e-posten.'));
+      }
+      if (svar.mailOk === false) {
+        linjer.push(p('Vi fekk ikkje sendt e-posten. Skriv ned referansen og send melding til ' + config.kontakt + '.'));
+      } else if (svar.kjem !== 'Nei') {
+        linjer.push(p('Finn du ikkje e-posten, sjekk søppelposten.'));
+      }
+      if (svar.demo) linjer.push(p('(Demomodus: ingenting er lagra.)'));
+      vis(boks, 'ok', linjer);
+    } catch (err) {
+      vis(boks, 'feil', [p('Fekk ikkje kontakt. Sjekk nettet og prøv igjen.')]);
+    } finally {
+      knapp.disabled = false;
+      knapp.textContent = tekst;
+    }
+  });
+
+  // ---------- Tips ----------
+  const tSkjema = $('#tips-skjema');
+  tSkjema.addEventListener('submit', async e => {
+    e.preventDefault();
+    const boks = $('#tips-melding');
+    const knapp = $('#tips-knapp');
+    const data = {
+      type: 'tips',
+      kategori: tSkjema.kategori.value,
+      tekst: tSkjema.tekst.value.trim(),
+      namn: tSkjema.namn.value.trim(),
+      nettside: tSkjema.nettside.value
+    };
+    if (data.tekst.length < 3) { vis(boks, 'feil', [p(feiltekst.tips)]); tSkjema.tekst.focus(); return; }
+    knapp.disabled = true;
+    try {
+      const svar = await send(data);
+      if (!svar.ok) { vis(boks, 'feil', [p(feiltekst[svar.feil] || 'Tipset kom ikkje fram. Prøv igjen.')]); return; }
+      vis(boks, 'ok', [p('Takk, tipset er sendt til komiteen.')]);
+      tSkjema.reset();
+    } catch (err) {
+      vis(boks, 'feil', [p('Fekk ikkje kontakt. Sjekk nettet og prøv igjen.')]);
+    } finally {
+      knapp.disabled = false;
+    }
+  });
+
+  // ---------- Start ----------
+  const p0 = lagra.hent();
+  if (p0) opne(p0, true);
+  else $('#pin').focus();
+})();
+</script>
+</body>
+</html>
