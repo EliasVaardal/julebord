@@ -381,7 +381,7 @@ footer { text-align: center; font-family: var(--typemaskin); color: var(--kort-d
             <span class="hjelp" id="gjest-hjelp">Vel namnet ditt på invitasjonslista.</span>
             <select id="gjest" name="gjest" aria-describedby="gjest-hjelp"></select>
           </div>
-          <div class="felt">
+          <div class="felt" id="namn-felt">
             <label for="namn">Fullt namn</label>
             <span class="hjelp" id="namn-hjelp">Fornamn og etternamn, så vi finn deg når du betaler.</span>
             <input id="namn" name="namn" type="text" autocomplete="name" required aria-describedby="namn-hjelp">
@@ -773,7 +773,7 @@ footer { text-align: center; font-family: var(--typemaskin); color: var(--kort-d
     const felt = $('#gjest-felt'), sel = $('#gjest');
     const harListe = !!(gjester && gjester.harListe && gjester.inviterte.length);
     felt.hidden = !harListe;
-    if (!harListe) return;
+    if (!harListe) { oppdaterNamnFelt(); return; }
     const val = sel.value;
     sel.innerHTML = '';
     const opt = (v, t) => { const o = document.createElement('option'); o.value = v; o.textContent = t; sel.append(o); };
@@ -781,7 +781,18 @@ footer { text-align: center; font-family: var(--typemaskin); color: var(--kort-d
     gjester.inviterte.forEach(g => opt(g, g));
     opt('-', 'Eg står ikkje på lista');
     sel.value = val;
+    oppdaterNamnFelt();
   }
+
+  // Med invitasjonsliste er namnet på lista nok. Fullt namn trengst berre for dei som ikkje står der.
+  function medListe() { return !$('#gjest-felt').hidden; }
+  function oppdaterNamnFelt() {
+    $('#namn-felt').hidden = medListe() && pSkjema.gjest.value !== '-';
+  }
+  $('#gjest').addEventListener('change', e => {
+    oppdaterNamnFelt();
+    if (e.target.value === '-') pSkjema.namn.focus();
+  });
 
   async function oppdaterData() {
     try {
@@ -827,8 +838,9 @@ footer { text-align: center; font-family: var(--typemaskin); color: var(--kort-d
 
   function fyllSkjema(s, epost) {
     // Tom gjest kan bety «ikkje på lista» eller ei påmelding frå før lista kom; då må dei velje på nytt.
-    if (!$('#gjest-felt').hidden) pSkjema.gjest.value = s.gjest || '';
+    if (medListe()) pSkjema.gjest.value = s.gjest || '';
     pSkjema.namn.value = s.namn;
+    oppdaterNamnFelt();
     pSkjema.epost.value = epost;
     pSkjema.kjem.value = s.kjem === 'Nei' ? 'Nei' : 'Ja';
     pSkjema.mat.value = s.mat === 'Nei' ? 'Nei' : 'Ja';
@@ -881,17 +893,18 @@ footer { text-align: center; font-family: var(--typemaskin); color: var(--kort-d
     visSkjema(true);
     $('#hent-boks').hidden = true;
     $('#pamelding-melding').innerHTML = '';
-    pSkjema.namn.focus();
+    (medListe() ? pSkjema.gjest : pSkjema.namn).focus();
   });
   $('#logg-ut').addEventListener('click', () => {
     lagra.fjernMeg();
     megNamn = '';
     pSkjema.reset();
     oppdaterKjem();
+    oppdaterNamnFelt();
     $('#pamelding-melding').innerHTML = '';
     visSkjema(true);
     visGjester();
-    pSkjema.namn.focus();
+    (medListe() ? pSkjema.gjest : pSkjema.namn).focus();
   });
 
   // Hent påmelding frå ein annan mobil: e-post + referanse
@@ -993,7 +1006,7 @@ footer { text-align: center; font-family: var(--typemaskin); color: var(--kort-d
     const data = {
       type: 'pamelding',
       gjest: pSkjema.gjest.value === '-' ? '' : pSkjema.gjest.value,
-      namn: pSkjema.namn.value.trim(),
+      namn: medListe() && pSkjema.gjest.value && pSkjema.gjest.value !== '-' ? pSkjema.gjest.value : pSkjema.namn.value.trim(),
       epost: pSkjema.epost.value.trim(),
       kjem: pSkjema.kjem.value,
       mat: pSkjema.mat.value,
