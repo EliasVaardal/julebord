@@ -195,6 +195,23 @@ textarea { min-height: 6rem; resize: vertical; }
 .melding strong { font-family: var(--typemaskin); }
 .honning { position: absolute; left: -9999px; width: 1px; height: 1px; overflow: hidden; }
 
+/* ---------- Eigen påmelding og deltakarliste ---------- */
+.status-kort { margin: 0 0 1.5rem; }
+#min-status-banner .melding { margin: 0 0 1.25rem; }
+.status-kort .ref { font-family: var(--typemaskin); font-weight: 700; }
+.status-kort .betalt { color: var(--ok); font-weight: 700; }
+.status-kort .manglar { color: var(--feil); font-weight: 700; }
+.knapperad { display: flex; flex-wrap: wrap; gap: 0.75rem 1.25rem; align-items: center; margin-top: 1.25rem; }
+.lenke {
+  font: inherit; color: var(--blekk); background: none; border: 0; padding: 0;
+  text-decoration: underline; text-underline-offset: 3px; cursor: pointer;
+}
+.knapp.sekundar { background: transparent; color: var(--blekk); box-shadow: inset 0 0 0 2px var(--blekk); }
+.tal { font-family: var(--typemaskin); font-weight: 700; font-size: 1.15rem; }
+.namneliste { list-style: none; padding: 0; margin: 0; columns: 2 12rem; column-gap: 2rem; }
+.namneliste li { break-inside: avoid; line-height: var(--rad); }
+.namneliste li.meg { font-weight: 700; }
+
 /* ---------- Program ---------- */
 .program { list-style: none; padding: 0; margin: 2rem auto 0; text-align: left; max-width: 26rem; font-size: 1.1rem; }
 .program li { display: grid; grid-template-columns: 4.5rem 1fr; padding: 0.35rem 0; color: var(--kort-tekst); }
@@ -238,7 +255,8 @@ footer { text-align: center; font-family: var(--typemaskin); color: var(--kort-d
       betalingsfrist: '2026-12-11T22:59:00Z',
       kontakt: 'Elias',
       okonomi: 'Kjartan'
-    }
+    },
+    deltakarar: ['Demo Demosen', 'Kari Eksempel', 'Ola Prøvesen']
   };
 </script>
 
@@ -273,6 +291,16 @@ footer { text-align: center; font-family: var(--typemaskin); color: var(--kort-d
         <dt>Pris</dt><dd id="f-pris"></dd>
         <dt>Frist</dt><dd id="f-frist"></dd>
       </dl>
+
+      <!-- Vist i staden for skjemaet når sida kjenner att gjesten -->
+      <div id="min-status" class="status-kort" hidden>
+        <div id="min-status-banner" role="status" aria-live="polite"></div>
+        <div id="min-status-innhald"></div>
+        <div class="knapperad">
+          <button class="knapp sekundar" type="button" id="endre-knapp">Endre svaret mitt</button>
+          <button class="lenke" type="button" id="logg-ut">Ikkje deg? Logg ut</button>
+        </div>
+      </div>
 
       <form id="pamelding-skjema" novalidate>
         <div class="felt">
@@ -312,6 +340,32 @@ footer { text-align: center; font-family: var(--typemaskin); color: var(--kort-d
         <p class="dim" style="margin-top:.9rem">Har du meldt deg på før? Send skjemaet på nytt med same e-post, så blir svaret ditt oppdatert.</p>
         <div id="pamelding-melding" role="status" aria-live="polite"></div>
       </form>
+
+      <div id="hent-boks">
+        <p class="dim" style="margin:1.25rem 0 0"><button class="lenke" type="button" id="hent-vis" aria-expanded="false" aria-controls="hent-skjema">Meldt på frå ein annan mobil? Hent påmeldinga di.</button></p>
+        <form id="hent-skjema" novalidate hidden style="margin-top:1rem">
+          <div class="felt">
+            <label for="hent-epost">E-post</label>
+            <input id="hent-epost" name="epost" type="email" autocomplete="email" required>
+          </div>
+          <div class="felt">
+            <label for="hent-ref">Referanse</label>
+            <span class="hjelp" id="hent-ref-hjelp">Står i e-posten du fekk, til dømes JB-012.</span>
+            <input id="hent-ref" name="ref" type="text" autocomplete="off" required maxlength="20" aria-describedby="hent-ref-hjelp">
+          </div>
+          <button class="knapp" type="submit" id="hent-knapp">Hent</button>
+          <div id="hent-melding" role="status" aria-live="polite"></div>
+        </form>
+      </div>
+    </section>
+  </div>
+
+  <!-- Deltakarliste -->
+  <div class="ark-flate" id="deltakarar-flate" hidden>
+    <section class="ark" aria-labelledby="deltakarar-tittel">
+      <h2 id="deltakarar-tittel">Kven kjem</h2>
+      <p id="deltakarar-tal" class="tal"></p>
+      <ol class="namneliste" id="deltakarar-liste"></ol>
     </section>
   </div>
 
@@ -402,17 +456,35 @@ footer { text-align: center; font-family: var(--typemaskin); color: var(--kort-d
 
   let pin = '';
   let config = null;
+  let deltakarar = null;   // null = backend sender ikkje liste (gammal versjon)
+  let megNamn = '';
 
-  // ---------- Lagring av PIN (fungerer ikkje overalt, så alt er pakka inn) ----------
+  // ---------- Lagring på eininga (fungerer ikkje overalt, så alt er pakka inn) ----------
+  // jb_pin: koden. jb_meg: { ref, epost } etter påmelding, så sida kjenner att gjesten neste gong.
   const lagra = {
     hent() { try { return localStorage.getItem('jb_pin') || ''; } catch (e) { return ''; } },
     set(v) { try { localStorage.setItem('jb_pin', v); } catch (e) {} },
-    fjern() { try { localStorage.removeItem('jb_pin'); } catch (e) {} }
+    fjern() { try { localStorage.removeItem('jb_pin'); } catch (e) {} },
+    hentMeg() { try { const m = JSON.parse(localStorage.getItem('jb_meg') || 'null'); return m && m.ref && m.epost ? m : null; } catch (e) { return null; } },
+    setMeg(m) { try { localStorage.setItem('jb_meg', JSON.stringify({ ref: m.ref, epost: m.epost })); } catch (e) {} },
+    fjernMeg() { try { localStorage.removeItem('jb_meg'); } catch (e) {} }
   };
+
+  // ---------- Demomodus: ei påmelding i minnet, så status og liste kan prøvast ----------
+  const demo = {
+    hent() { try { return JSON.parse(localStorage.getItem('jb_demo') || 'null'); } catch (e) { return null; } },
+    set(v) { try { localStorage.setItem('jb_demo', JSON.stringify(v)); } catch (e) {} }
+  };
+  function demoListe() {
+    const d = demo.hent();
+    const l = DEMO.deltakarar.slice();
+    if (d && d.kjem === 'Ja') l.push(d.namn);
+    return l.sort((a, b) => a.localeCompare(b, 'nb'));
+  }
 
   // ---------- API ----------
   async function hentConfig(p) {
-    if (!API_URL) return p === DEMO.pin ? { ok: true, config: DEMO.config } : { ok: false, feil: 'feil' };
+    if (!API_URL) return p === DEMO.pin ? { ok: true, config: DEMO.config, deltakarar: demoListe() } : { ok: false, feil: 'feil' };
     const r = await fetch(API_URL + '?action=config&pin=' + encodeURIComponent(p));
     return r.json();
   }
@@ -420,7 +492,15 @@ footer { text-align: center; font-family: var(--typemaskin); color: var(--kort-d
     if (!API_URL) {
       await new Promise(r => setTimeout(r, 500));
       if (data.type === 'tips') return { ok: true };
+      if (data.type === 'status') {
+        const d = demo.hent();
+        return d && d.epost === data.epost.toLowerCase() && d.ref === data.ref.toUpperCase()
+          ? Object.assign({ ok: true }, d) : { ok: false, feil: 'ukjend' };
+      }
       const belop = data.kjem === 'Nei' ? 0 : (data.mat === 'Ja' ? DEMO.config.prisMed : DEMO.config.prisUtan);
+      demo.set({ ref: 'JB-000', namn: data.namn, epost: data.epost.toLowerCase(), kjem: data.kjem,
+        mat: data.kjem === 'Ja' ? data.mat : '', allergi: data.kjem === 'Ja' ? data.allergi : '',
+        forventa: belop, innbetalt: 0, status: data.kjem === 'Nei' ? 'Meldt av' : 'Ikkje betalt' });
       return { ok: true, ref: 'JB-000', belop, ny: true, kjem: data.kjem, mailOk: true, demo: true };
     }
     const r = await fetch(API_URL, { method: 'POST', body: JSON.stringify(Object.assign({ pin }, data)) });
@@ -431,7 +511,8 @@ footer { text-align: center; font-family: var(--typemaskin); color: var(--kort-d
     sperra: 'For mange forsøk. Prøv igjen om ti minutt.',
     namn: 'Skriv inn namnet ditt.',
     epost: 'E-postadressa ser ikkje rett ut.',
-    tips: 'Skriv litt meir i tipset.'
+    tips: 'Skriv litt meir i tipset.',
+    ukjend: 'Fann inga påmelding med den e-posten og referansen.'
   };
 
   // ---------- PIN-port ----------
@@ -447,6 +528,7 @@ footer { text-align: center; font-family: var(--typemaskin); color: var(--kort-d
         return;
       }
       pin = p; config = svar.config; lagra.set(p);
+      deltakarar = Array.isArray(svar.deltakarar) ? svar.deltakarar : null;
       visSida();
     } catch (e) {
       melding.textContent = 'Fekk ikkje kontakt. Sjekk nettet og prøv igjen.';
@@ -479,7 +561,165 @@ footer { text-align: center; font-family: var(--typemaskin); color: var(--kort-d
 
     tel(start);
     setInterval(() => tel(start), 1000);
+
+    visDeltakarar();
+    visMeg();
   }
+
+  // ---------- Deltakarliste ----------
+  function visDeltakarar() {
+    const flate = $('#deltakarar-flate');
+    if (!deltakarar) { flate.hidden = true; return; }
+    flate.hidden = false;
+    const n = deltakarar.length;
+    $('#deltakarar-tal').textContent = n === 0 ? 'Ingen har meldt seg på enno. Bli den første.'
+      : n === 1 ? '1 har meldt seg på.' : n + ' har meldt seg på.';
+    const liste = $('#deltakarar-liste');
+    liste.innerHTML = '';
+    deltakarar.forEach(namn => {
+      const li = document.createElement('li');
+      li.textContent = namn;
+      if (megNamn && namn === megNamn) { li.className = 'meg'; li.append(' (deg)'); }
+      liste.append(li);
+    });
+  }
+  async function oppdaterDeltakarar() {
+    try {
+      const svar = await hentConfig(pin);
+      if (svar.ok && Array.isArray(svar.deltakarar)) { deltakarar = svar.deltakarar; visDeltakarar(); }
+    } catch (e) { /* lista blir ståande som ho var */ }
+  }
+
+  // ---------- Eigen påmelding ----------
+  // Kjenner sida att gjesten (jb_meg), blir status vist i staden for skjemaet.
+  function visSkjema(vis) {
+    pSkjema.hidden = !vis;
+    $('#hent-boks').hidden = !vis || !!lagra.hentMeg();
+    $('#min-status').hidden = vis;
+    $('#opning .knapp-kort').textContent = vis ? 'Meld deg på' : 'Sjå påmeldinga di';
+  }
+
+  // melding (valfri, etter innsending): { kort } over statusen, eller { full } i skjemaet om status ikkje kan hentast.
+  async function visMeg(melding) {
+    const meg = lagra.hentMeg();
+    let svar = { ok: false, feil: 'ingen' };
+    if (meg) {
+      try { svar = await send({ type: 'status', ref: meg.ref, epost: meg.epost }); }
+      catch (e) { svar = { ok: false, feil: 'nett' }; }
+    }
+    if (!svar.ok) {
+      if (svar.feil === 'ukjend') lagra.fjernMeg();      // raden er sletta i arket
+      megNamn = '';
+      visSkjema(true);
+      if (melding) vis($('#pamelding-melding'), 'ok', melding.full);
+      return;
+    }
+    megNamn = svar.namn;
+    visDeltakarar();
+    fyllSkjema(svar, meg.epost);
+    teiknStatus(svar);
+    const b = $('#min-status-banner');
+    b.innerHTML = '';
+    if (melding) vis(b, 'ok', melding.kort);
+    visSkjema(false);
+  }
+
+  function fyllSkjema(s, epost) {
+    pSkjema.namn.value = s.namn;
+    pSkjema.epost.value = epost;
+    pSkjema.kjem.value = s.kjem === 'Nei' ? 'Nei' : 'Ja';
+    pSkjema.mat.value = s.mat === 'Nei' ? 'Nei' : 'Ja';
+    pSkjema.allergi.value = s.allergi || '';
+    oppdaterKjem();
+  }
+
+  function teiknStatus(s) {
+    const boks = $('#min-status-innhald');
+    boks.innerHTML = '';
+    const frist = fmtKort.format(new Date(config.betalingsfrist));
+    const manglar = Math.max(s.forventa - s.innbetalt, 0);
+    const sterk = (tekst, klasse) => { const el = document.createElement('strong'); el.textContent = tekst; if (klasse) el.className = klasse; return el; };
+
+    if (s.kjem === 'Nei') {
+      boks.append(p('Hei ' + s.namn.split(' ')[0] + '. Du har meldt deg av.'));
+    } else {
+      boks.append(p('Hei ' + s.namn.split(' ')[0] + '. Du er påmeld ' + (s.mat === 'Ja' ? 'med mat.' : 'utan mat.')));
+    }
+    const ref = p('Referanse: ');
+    const r = sterk(s.ref, 'ref'); ref.append(r);
+    boks.append(ref);
+
+    const bet = p();
+    switch (s.status) {
+      case 'OK': bet.append(sterk('Betalt', 'betalt'), ': ' + kr(s.innbetalt) + '. Alt er i orden.'); break;
+      case 'Ikkje betalt': bet.append(sterk('Ikkje betalt enno', 'manglar'), '. Betal ' + kr(manglar) + ' til ' + config.okonomi + ' på Vipps innan ' + frist + ', og skriv ' + s.ref + ' i meldinga. Nummeret står i e-posten.'); break;
+      case 'Delvis': bet.append(sterk('Delvis betalt', 'manglar'), ': ' + kr(s.innbetalt) + ' av ' + kr(s.forventa) + '. Manglar ' + kr(manglar) + ', betal innan ' + frist + '.'); break;
+      case 'For mykje': bet.append(sterk('Betalt', 'betalt'), ': ' + kr(s.innbetalt) + ', som er meir enn ' + kr(s.forventa) + '. ' + config.okonomi + ' sender mellomlegget tilbake.'); break;
+      case 'Refunder': bet.append('Du har betalt ' + kr(s.innbetalt) + '. ' + config.okonomi + ' sender pengane tilbake.'); break;
+      default: break;
+    }
+    if (bet.childNodes.length) boks.append(bet);
+
+    if (s.kjem !== 'Nei') {
+      boks.append(p('Allergiar og kosthald: ' + (s.allergi || 'ingen registrert') + '.'));
+      if (s.status !== 'OK' && s.status !== 'For mykje') {
+        const n = p('Betalingar blir førte inn for hand, så det kan ta nokre dagar før dei syner her.');
+        n.className = 'dim'; boks.append(n);
+      }
+    }
+  }
+
+  $('#endre-knapp').addEventListener('click', () => {
+    visSkjema(true);
+    $('#hent-boks').hidden = true;
+    $('#pamelding-melding').innerHTML = '';
+    pSkjema.namn.focus();
+  });
+  $('#logg-ut').addEventListener('click', () => {
+    lagra.fjernMeg();
+    megNamn = '';
+    pSkjema.reset();
+    oppdaterKjem();
+    $('#pamelding-melding').innerHTML = '';
+    visSkjema(true);
+    visDeltakarar();
+    pSkjema.namn.focus();
+  });
+
+  // Hent påmelding frå ein annan mobil: e-post + referanse
+  $('#hent-vis').addEventListener('click', e => {
+    const f = $('#hent-skjema');
+    f.hidden = !f.hidden;
+    e.currentTarget.setAttribute('aria-expanded', String(!f.hidden));
+    if (!f.hidden) $('#hent-epost').focus();
+  });
+  $('#hent-skjema').addEventListener('submit', async e => {
+    e.preventDefault();
+    const f = e.currentTarget;
+    const boks = $('#hent-melding');
+    const knapp = $('#hent-knapp');
+    const epost = f.epost.value.trim().toLowerCase();
+    const ref = f.ref.value.trim().toUpperCase().replace(/^JB\s*-?\s*/, 'JB-');
+    if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(epost)) { vis(boks, 'feil', [p(feiltekst.epost)]); f.epost.focus(); return; }
+    if (!ref) { vis(boks, 'feil', [p('Skriv inn referansen.')]); f.ref.focus(); return; }
+    knapp.disabled = true;
+    try {
+      const svar = await send({ type: 'status', ref, epost });
+      if (!svar.ok) {
+        vis(boks, 'feil', [p(svar.feil === 'type' ? 'Dette er ikkje klart enno. Prøv igjen seinare.' : (feiltekst[svar.feil] || feiltekst.ukjend))]);
+        return;
+      }
+      lagra.setMeg({ ref: svar.ref, epost });
+      boks.innerHTML = '';
+      f.reset(); f.hidden = true;
+      $('#hent-vis').setAttribute('aria-expanded', 'false');
+      await visMeg();
+    } catch (err) {
+      vis(boks, 'feil', [p('Fekk ikkje kontakt. Sjekk nettet og prøv igjen.')]);
+    } finally {
+      knapp.disabled = false;
+    }
+  });
 
   // Éin skrivemaskin-effekt på opningskortet. Hoppar over ved redusert rørsle.
   function skriv(el, tekst) {
@@ -577,7 +817,18 @@ footer { text-align: center; font-family: var(--typemaskin); color: var(--kort-d
         linjer.push(p('Finn du ikkje e-posten, sjekk søppelposten.'));
       }
       if (svar.demo) linjer.push(p('(Demomodus: ingenting er lagra.)'));
-      vis(boks, 'ok', linjer);
+
+      if (!svar.ref) { vis(boks, 'ok', linjer); return; }
+      // Hugs gjesten på denne eininga, og vis status i staden for skjemaet.
+      lagra.setMeg({ ref: svar.ref, epost: data.epost.toLowerCase() });
+      const kort = [p(svar.kjem === 'Nei' ? 'Takk, avmeldinga er registrert.' : (svar.ny ? 'Takk, du er påmeld!' : 'Takk, svaret ditt er oppdatert.'))];
+      if (svar.mailOk === false) kort.push(p('Vi fekk ikkje sendt e-posten. Skriv ned referansen og send melding til ' + config.kontakt + '.'));
+      else kort.push(p('Stadfesting er sendt på e-post. Finn du han ikkje, sjekk søppelposten.'));
+      if (svar.demo) kort.push(p('(Demomodus: ingenting er lagra.)'));
+      boks.innerHTML = '';
+      await Promise.all([visMeg({ kort, full: linjer }), oppdaterDeltakarar()]);
+      visDeltakarar();
+      $('#pamelding').scrollIntoView({ behavior: 'smooth', block: 'start' });
     } catch (err) {
       vis(boks, 'feil', [p('Fekk ikkje kontakt. Sjekk nettet og prøv igjen.')]);
     } finally {
