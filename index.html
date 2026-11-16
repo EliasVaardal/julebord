@@ -254,9 +254,48 @@ textarea { min-height: 6rem; resize: vertical; }
 .merke.nei { color: var(--feil); }
 .merke.ingen { color: var(--blekk-dim); }
 
+/* Mobil: Info før påmelding, program etter. Kolonnane blir oppløyste så rekkjefølgja kan styrast. */
+@media (max-width: 61.99rem) {
+  .dash .kol { display: contents; }
+  #tal-rad { order: 0; }
+  #info { order: 1; }
+  #pamelding { order: 2; }
+  #program { order: 3; }
+  .dash > .heil:not(#tal-rad) { order: 4; }
+}
+
+/* Skjema som ikkje treng full breidd */
+.smalt { max-width: 40rem; }
+.felt-rad { display: grid; gap: 0 1rem; grid-template-columns: minmax(0, 1fr); }
+@media (min-width: 40rem) { .felt-rad { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); } }
+
 /* Tips */
-.to-kol { display: grid; gap: 2rem; grid-template-columns: minmax(0, 1fr); }
-.tipsliste { list-style: none; padding: 0; margin: 0 0 1rem; display: grid; gap: 0.9rem; }
+.tipsliste { list-style: none; padding: 0; margin: 0 0 1rem; display: grid; gap: 0.9rem; grid-template-columns: repeat(auto-fill, minmax(min(100%, 17rem), 1fr)); }
+
+/* Pollar */
+.pollgrid { list-style: none; padding: 0; margin: 0; display: grid; gap: 0.9rem; grid-template-columns: repeat(auto-fill, minmax(min(100%, 13rem), 1fr)); }
+.pollgrid li { background: var(--felt); border: 1.5px solid var(--blekk-dim); border-radius: 3px; min-width: 0; }
+.pollgrid li.open { grid-column: 1 / -1; border-color: var(--blekk); box-shadow: inset 0 0 0 1px var(--blekk); }
+.poll-topp {
+  display: grid; gap: 0.35rem; width: 100%; text-align: left; padding: 0.8rem 0.9rem;
+  font: inherit; color: var(--blekk); background: none; border: 0; cursor: pointer;
+}
+.poll-topp .sp { font-weight: 700; line-height: 1.35; overflow-wrap: anywhere; }
+.poll-topp .meta { font-size: 0.85rem; color: var(--blekk-dim); }
+.poll-topp .leiar { font-family: var(--typemaskin); font-size: 0.85rem; color: var(--marg); overflow-wrap: anywhere; }
+.poll-kropp { padding: 0 0.9rem 0.9rem; display: grid; gap: 0.5rem; }
+.poll-val {
+  position: relative; display: flex; justify-content: space-between; gap: 1rem; align-items: center;
+  width: 100%; text-align: left; font: inherit; color: var(--blekk); background: var(--papir);
+  border: 1.5px solid var(--blekk-dim); border-radius: 3px; padding: 0.55rem 0.8rem; cursor: pointer; overflow: hidden;
+}
+.poll-val .bar { position: absolute; inset: 0 auto 0 0; background: var(--linje); opacity: .75; z-index: 0; transition: width .3s; }
+.poll-val > span:not(.bar) { position: relative; z-index: 1; overflow-wrap: anywhere; }
+.poll-val .n { font-family: var(--typemaskin); font-variant-numeric: tabular-nums; white-space: nowrap; }
+.poll-val[aria-pressed="true"] { border-color: var(--blekk); box-shadow: inset 0 0 0 1px var(--blekk); font-weight: 700; }
+.poll-val[disabled] { cursor: progress; }
+.poll-alt { display: grid; gap: 0.5rem; margin-bottom: 0.6rem; }
+@media (prefers-reduced-motion: reduce) { .poll-val .bar { transition: none; } }
 .tipsliste li { background: var(--felt); border: 1.5px solid var(--linje); border-radius: 3px; padding: 0.7rem 0.9rem; }
 .tipsliste .topp { display: flex; flex-wrap: wrap; gap: 0.25rem 0.75rem; font-size: 0.85rem; color: var(--blekk-dim); margin-bottom: 0.3rem; }
 .tipsliste .kat { font-family: var(--typemaskin); font-weight: 700; color: var(--marg); }
@@ -269,7 +308,6 @@ textarea { min-height: 6rem; resize: vertical; }
 @media (min-width: 62rem) {
   .dash { grid-template-columns: minmax(0, 3fr) minmax(0, 2fr); padding: 0 1.5rem 3rem; }
   .dash .heil { grid-column: 1 / -1; }
-  .to-kol { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
   .dash .ark { padding: 2.5rem 2rem 2.5rem 4.25rem; }
   .dash .ark::before { left: 3rem; }
 }
@@ -324,6 +362,10 @@ footer { text-align: center; font-family: var(--typemaskin); color: var(--kort-d
     tips: [
       { tid: '2026-11-15T19:12:00Z', kategori: 'Musikk', tekst: 'Meir ABBA etter kl. 23.', namn: 'Kari' },
       { tid: '2026-11-14T08:40:00Z', kategori: 'Mat og drikke', tekst: 'Vegetar-alternativ som ikkje berre er salat.', namn: '' }
+    ],
+    pollar: [
+      { id: 'Pdemo1', tid: '2026-11-15T10:00:00Z', sporsmal: 'Kva skal vi ha til mat?', alternativ: ['Ribbe', 'Pinnekjøt', 'Taco', 'Pizza'], stemmer: [4, 3, 6, 1], av: 'Komiteen' },
+      { id: 'Pdemo2', tid: '2026-11-15T12:00:00Z', sporsmal: 'Beste julefilm?', alternativ: ['Grevinnen og hovmesteren', 'Love Actually', 'Die Hard'], stemmer: [2, 5, 7], av: '' }
     ]
   };
 </script>
@@ -361,7 +403,7 @@ footer { text-align: center; font-family: var(--typemaskin); color: var(--kort-d
     </section>
 
     <!-- Venstre: påmelding / eigen status -->
-    <div class="kol">
+    <div class="kol kol-pam">
       <section class="ark" id="pamelding" aria-labelledby="pamelding-tittel">
         <h2 id="pamelding-tittel">Påmelding</h2>
 
@@ -403,7 +445,9 @@ footer { text-align: center; font-family: var(--typemaskin); color: var(--kort-d
             <div class="val">
               <label><input type="radio" name="mat" value="Ja" checked> <span id="mat-ja">Ja, med mat</span></label>
               <label><input type="radio" name="mat" value="Nei"> <span id="mat-nei">Nei, berre festen</span></label>
+              <label id="mat-seinare-val" hidden><input type="radio" name="mat" value="Seinare"> Vel seinare</label>
             </div>
+            <span class="hjelp" id="mat-hjelp" hidden style="margin-top:.5rem"><span id="mat-poll-lenke" hidden>Usikker? <a href="#pollar">Stem i matpollen</a> nedst på sida. </span>Vel seinare betyr at du ventar med å betale til du har bestemt deg.</span>
           </fieldset>
           <div class="felt" id="allergi-felt">
             <label for="allergi">Allergiar eller kosthald</label>
@@ -439,7 +483,7 @@ footer { text-align: center; font-family: var(--typemaskin); color: var(--kort-d
     </div>
 
     <!-- Høgre: info og program -->
-    <div class="kol">
+    <div class="kol kol-info">
       <section class="ark" id="info" aria-labelledby="info-tittel">
         <h2 id="info-tittel">Info</h2>
         <dl class="fakta">
@@ -453,7 +497,7 @@ footer { text-align: center; font-family: var(--typemaskin); color: var(--kort-d
       </section>
 
       <!-- Program (endre lista når programmet er klart) -->
-      <section class="ark" aria-labelledby="program-tittel">
+      <section class="ark" id="program" aria-labelledby="program-tittel">
         <h2 id="program-tittel">Program</h2>
         <p class="dim">Følgende er bekreftet.</p>
         <ol class="program">
@@ -467,57 +511,91 @@ footer { text-align: center; font-family: var(--typemaskin); color: var(--kort-d
       </section>
     </div>
 
-    <!-- Gjestelista -->
+    <!-- Gjestelista: lukka frå start -->
     <section class="ark heil" id="gjester" aria-labelledby="gjester-tittel" hidden>
       <h2 id="gjester-tittel">Gjestelista</h2>
-      <div class="filter" role="group" aria-label="Vis">
-        <button type="button" data-filter="alle" aria-pressed="true">Alle <span id="fl-alle"></span></button>
-        <button type="button" data-filter="ja" aria-pressed="false">Kjem <span id="fl-ja"></span></button>
-        <button type="button" data-filter="nei" aria-pressed="false">Kan ikkje <span id="fl-nei"></span></button>
-        <button type="button" data-filter="ingen" aria-pressed="false" data-krev-liste>Ikkje svart <span id="fl-ingen"></span></button>
+      <p id="gjester-samandrag"></p>
+      <button class="knapp sekundar" type="button" id="gjester-vis" aria-expanded="false" aria-controls="gjester-innhald">Vis gjestelista</button>
+      <div id="gjester-innhald" hidden style="margin-top:1.25rem">
+        <div class="filter" role="group" aria-label="Vis">
+          <button type="button" data-filter="alle" aria-pressed="true">Alle <span id="fl-alle"></span></button>
+          <button type="button" data-filter="ja" aria-pressed="false">Kjem <span id="fl-ja"></span></button>
+          <button type="button" data-filter="nei" aria-pressed="false">Kan ikkje <span id="fl-nei"></span></button>
+          <button type="button" data-filter="ingen" aria-pressed="false" data-krev-liste>Ikkje svart <span id="fl-ingen"></span></button>
+        </div>
+        <ul class="gjesteliste" id="gjesteliste"></ul>
+        <p class="dim" id="gjesteliste-tom" hidden>Ingen her enno.</p>
       </div>
-      <ul class="gjesteliste" id="gjesteliste"></ul>
-      <p class="dim" id="gjesteliste-tom" hidden>Ingen her enno.</p>
     </section>
 
-    <!-- Tips og feedback -->
+    <!-- Tips og feedback: skjema, så alle tipsa under -->
     <section class="ark heil" id="tips" aria-labelledby="tips-tittel">
       <h2 id="tips-tittel">Tips og feedback</h2>
-      <div class="to-kol">
-        <div>
-          <p>Idé til ein aktivitet, musikk eller mat, eller noko vi bør gjere annleis enn i fjor? Skriv det her. Tipset blir vist på sida for alle som har koden.</p>
-          <form id="tips-skjema" novalidate>
-            <div class="felt">
-              <label for="kategori">Kva gjeld det?</label>
-              <select id="kategori" name="kategori">
-                <option>Aktivitet</option>
-                <option>Mat og drikke</option>
-                <option>Musikk</option>
-                <option>Anna</option>
-              </select>
-            </div>
-            <div class="felt">
-              <label for="tips-tekst">Tipset ditt</label>
-              <textarea id="tips-tekst" name="tekst" maxlength="1000" required></textarea>
-            </div>
-            <div class="felt">
-              <label for="tips-namn">Namn</label>
-              <span class="hjelp">Valfritt. Står ved tipset. La det stå tomt om du vil vere anonym.</span>
-              <input id="tips-namn" name="namn" type="text" maxlength="80">
-            </div>
-            <div class="honning" aria-hidden="true">
-              <input name="nettside" type="text" tabindex="-1" autocomplete="off">
-            </div>
-            <button class="knapp" type="submit" id="tips-knapp">Send tips</button>
-            <div id="tips-melding" role="status" aria-live="polite"></div>
-          </form>
+      <p>Idé til ein aktivitet, musikk eller mat, eller noko vi bør gjere annleis enn i fjor? Skriv det her. Tipset blir vist under, for alle som har koden.</p>
+      <form id="tips-skjema" class="smalt" novalidate>
+        <div class="felt-rad">
+          <div class="felt">
+            <label for="kategori">Kva gjeld det?</label>
+            <select id="kategori" name="kategori">
+              <option>Aktivitet</option>
+              <option>Mat og drikke</option>
+              <option>Musikk</option>
+              <option>Anna</option>
+            </select>
+          </div>
+          <div class="felt">
+            <label for="tips-namn">Namn <span class="dim">(valfritt)</span></label>
+            <input id="tips-namn" name="namn" type="text" maxlength="80" placeholder="Anonym">
+          </div>
         </div>
-        <div id="tipsfeed" hidden>
-          <h3 class="liten-tittel">Siste tips</h3>
-          <ul class="tipsliste" id="tipsliste"></ul>
-          <button class="lenke" type="button" id="tips-fleire" hidden>Vis alle</button>
+        <div class="felt">
+          <label for="tips-tekst">Tipset ditt</label>
+          <textarea id="tips-tekst" name="tekst" maxlength="1000" required></textarea>
         </div>
+        <div class="honning" aria-hidden="true">
+          <input name="nettside" type="text" tabindex="-1" autocomplete="off">
+        </div>
+        <button class="knapp" type="submit" id="tips-knapp">Send tips</button>
+        <div id="tips-melding" role="status" aria-live="polite"></div>
+      </form>
+      <div id="tipsfeed" hidden>
+        <h3 class="liten-tittel" style="margin-top:2rem">Alle tips</h3>
+        <ul class="tipsliste" id="tipsliste"></ul>
+        <button class="lenke" type="button" id="tips-fleire" hidden>Vis alle</button>
       </div>
+    </section>
+
+    <!-- Pollar: små kort som opnar seg når ein trykkjer -->
+    <section class="ark heil" id="pollar" aria-labelledby="pollar-tittel" hidden>
+      <h2 id="pollar-tittel">Pollar</h2>
+      <p>Små pollar for moro. Trykk på ein for å stemme. Alle med koden kan lage ein.</p>
+      <ul class="pollgrid" id="pollgrid"></ul>
+      <p class="dim" id="pollar-tom" hidden>Ingen pollar enno. Lag den første.</p>
+      <button class="knapp sekundar" type="button" id="ny-poll-vis" aria-expanded="false" aria-controls="poll-skjema" style="margin-top:1.25rem">Lag ein poll</button>
+      <form id="poll-skjema" class="smalt" novalidate hidden style="margin-top:1.25rem">
+        <div class="felt">
+          <label for="poll-sp">Spørsmål</label>
+          <input id="poll-sp" name="sporsmal" type="text" maxlength="140" required placeholder="Kva skal vi ha til mat?">
+        </div>
+        <fieldset class="felt">
+          <legend>Alternativ</legend>
+          <span class="hjelp">Mellom 2 og 6.</span>
+          <div id="poll-alt" class="poll-alt"></div>
+          <button class="lenke" type="button" id="poll-alt-ny">+ Legg til alternativ</button>
+        </fieldset>
+        <div class="felt">
+          <label for="poll-namn">Namn <span class="dim">(valfritt)</span></label>
+          <input id="poll-namn" name="namn" type="text" maxlength="80" placeholder="Anonym">
+        </div>
+        <div class="honning" aria-hidden="true">
+          <input name="nettside" type="text" tabindex="-1" autocomplete="off">
+        </div>
+        <div class="knapperad" style="margin-top:0">
+          <button class="knapp" type="submit" id="poll-knapp">Publiser pollen</button>
+          <button class="lenke" type="button" id="poll-avbryt">Avbryt</button>
+        </div>
+        <div id="poll-melding" role="status" aria-live="polite"></div>
+      </form>
     </section>
 
     <!-- Spørsmål -->
@@ -562,6 +640,8 @@ footer { text-align: center; font-family: var(--typemaskin); color: var(--kort-d
   let config = null;
   let gjester = null;      // { harListe, inviterte, liste:[{namn, invitert, svar}] }, null = ikkje tilgjengeleg
   let tips = null;         // [{tid, kategori, tekst, namn}], null = ikkje tilgjengeleg
+  let pollar = null;       // [{id, sporsmal, alternativ, stemmer, av}], null = backend utan pollar
+  let opnaPoll = null;
   let filter = 'alle';
   let visAlleTips = false;
   let megNamn = '';
@@ -583,6 +663,8 @@ footer { text-align: center; font-family: var(--typemaskin); color: var(--kort-d
     set(v) { try { localStorage.setItem('jb_demo', JSON.stringify(v)); } catch (e) {} }
   };
   let demoTips = DEMO.tips.slice();
+  let demoPollar = DEMO.pollar.map(p => Object.assign({}, p, { stemmer: p.stemmer.slice() }));
+  const demoStemt = {};
   function demoGjester() {
     const d = demo.hent();
     const svar = Object.assign({}, DEMO.svar);
@@ -595,7 +677,7 @@ footer { text-align: center; font-family: var(--typemaskin); color: var(--kort-d
 
   // ---------- API ----------
   async function hentConfig(p) {
-    if (!API_URL) return p === DEMO.pin ? { ok: true, config: DEMO.config, gjester: demoGjester(), tips: demoTips.slice() } : { ok: false, feil: 'feil' };
+    if (!API_URL) return p === DEMO.pin ? { ok: true, config: DEMO.config, gjester: demoGjester(), tips: demoTips.slice(), pollar: JSON.parse(JSON.stringify(demoPollar)) } : { ok: false, feil: 'feil' };
     const r = await fetch(API_URL + '?action=config&pin=' + encodeURIComponent(p));
     return r.json();
   }
@@ -606,15 +688,27 @@ footer { text-align: center; font-family: var(--typemaskin); color: var(--kort-d
         demoTips.unshift({ tid: new Date().toISOString(), kategori: data.kategori, tekst: data.tekst, namn: data.namn });
         return { ok: true };
       }
+      if (data.type === 'poll') {
+        const id = 'Pny' + Date.now();
+        demoPollar.unshift({ id, tid: new Date().toISOString(), sporsmal: data.sporsmal, alternativ: data.alternativ, stemmer: data.alternativ.map(() => 0), av: data.namn });
+        return { ok: true, id };
+      }
+      if (data.type === 'stem') {
+        const pl = demoPollar.find(x => x.id === data.poll);
+        if (!pl) return { ok: false, feil: 'stem' };
+        if (data.poll in demoStemt) pl.stemmer[demoStemt[data.poll]]--;
+        pl.stemmer[data.val]++; demoStemt[data.poll] = data.val;
+        return { ok: true };
+      }
       if (data.type === 'status') {
         const d = demo.hent();
         return d && d.epost === data.epost.toLowerCase() && d.ref === data.ref.toUpperCase()
           ? Object.assign({ ok: true }, d) : { ok: false, feil: 'ukjend' };
       }
-      const belop = data.kjem === 'Nei' ? 0 : (data.mat === 'Ja' ? DEMO.config.prisMed : DEMO.config.prisUtan);
+      const belop = data.kjem === 'Nei' || data.mat === 'Seinare' ? 0 : (data.mat === 'Ja' ? DEMO.config.prisMed : DEMO.config.prisUtan);
       demo.set({ ref: 'JB-000', namn: data.namn, epost: data.epost.toLowerCase(), kjem: data.kjem, gjest: data.gjest,
         mat: data.kjem === 'Ja' ? data.mat : '', allergi: data.kjem === 'Ja' ? data.allergi : '',
-        forventa: belop, innbetalt: 0, status: data.kjem === 'Nei' ? 'Meldt av' : 'Ikkje betalt' });
+        forventa: belop, innbetalt: 0, status: data.kjem === 'Nei' ? 'Meldt av' : data.mat === 'Seinare' ? 'Vel mat' : 'Ikkje betalt' });
       return { ok: true, ref: 'JB-000', belop, ny: true, kjem: data.kjem, mailOk: true, demo: true };
     }
     const r = await fetch(API_URL, { method: 'POST', body: JSON.stringify(Object.assign({ pin }, data)) });
@@ -636,6 +730,7 @@ footer { text-align: center; font-family: var(--typemaskin); color: var(--kort-d
     else if (Array.isArray(svar.deltakarar)) gjester = { harListe: false, inviterte: [], liste: svar.deltakarar.map(n => ({ namn: n, invitert: false, svar: 'Ja' })) };
     else gjester = null;
     tips = Array.isArray(svar.tips) ? svar.tips : null;
+    pollar = Array.isArray(svar.pollar) ? svar.pollar : null;
   }
 
   // ---------- PIN-port ----------
@@ -693,8 +788,24 @@ footer { text-align: center; font-family: var(--typemaskin); color: var(--kort-d
   function visDashboard() {
     visGjester();
     visTips();
+    visPollar();
     fyllGjestValg();
+    // «Vel seinare» krev backend som kjenner valet (same versjon som har pollar).
+    const seinare = pollar !== null;
+    $('#mat-seinare-val').hidden = !seinare;
+    $('#mat-hjelp').hidden = !seinare;
+    // Lenka til matpollen blir berre vist når det finst ein poll om mat.
+    matPoll = seinare ? pollar.find(pl => /\bmat\b|middag|meny|julemat/i.test(pl.sporsmal)) || null : null;
+    $('#mat-poll-lenke').hidden = !matPoll;
   }
+  let matPoll = null;
+  $('#mat-poll-lenke a').addEventListener('click', e => {
+    if (!matPoll) return;
+    e.preventDefault();
+    opnaPoll = matPoll.id;
+    visPollar();
+    $('#pollar').scrollIntoView({ behavior: rorsle(), block: 'start' });
+  });
 
   function visGjester() {
     const rad = $('#tal-rad'), seksjon = $('#gjester');
@@ -713,6 +824,11 @@ footer { text-align: center; font-family: var(--typemaskin); color: var(--kort-d
       $('#fl-' + k).textContent = '(' + n[k] + ')';
     });
     $('#t-alle').textContent = gjester.liste.filter(g => g.invitert).length;
+    const delar = [];
+    if (harListe) delar.push($('#t-alle').textContent + ' inviterte');
+    delar.push(n.ja + ' kjem', n.nei + ' kan ikkje');
+    if (harListe) delar.push(n.ingen + ' har ikkje svart');
+    $('#gjester-samandrag').textContent = stor(delar.join(', ')) + '.';
 
     document.querySelectorAll('[data-filter]').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.filter === filter)));
 
@@ -739,8 +855,145 @@ footer { text-align: center; font-family: var(--typemaskin); color: var(--kort-d
   document.querySelectorAll('[data-filter]').forEach(b => b.addEventListener('click', () => {
     filter = b.dataset.filter;
     visGjester();
-    if (b.classList.contains('tal-flis')) $('#gjester').scrollIntoView({ behavior: rorsle(), block: 'start' });
+    if (b.classList.contains('tal-flis')) {
+      opneGjester(true);
+      $('#gjester').scrollIntoView({ behavior: rorsle(), block: 'start' });
+    }
   }));
+  function opneGjester(open) {
+    $('#gjester-innhald').hidden = !open;
+    $('#gjester-vis').setAttribute('aria-expanded', String(open));
+    $('#gjester-vis').textContent = open ? 'Skjul gjestelista' : 'Vis gjestelista';
+  }
+  $('#gjester-vis').addEventListener('click', () => opneGjester($('#gjester-innhald').hidden));
+
+  // ---------- Pollar ----------
+  // Veljar-ID: tilfeldig per eining, så kvar mobil har éi stemme per poll. Ikkje vasstett, berre for moro.
+  const stemmer = {
+    id() {
+      try {
+        let v = localStorage.getItem('jb_veljar');
+        if (!v) { const a = new Uint8Array(12); crypto.getRandomValues(a); v = Array.from(a, b => b.toString(16).padStart(2, '0')).join(''); localStorage.setItem('jb_veljar', v); }
+        return v;
+      } catch (e) { return stemmer._tmp || (stemmer._tmp = 'tmp' + Math.random().toString(36).slice(2, 14)); }
+    },
+    mine() { try { return JSON.parse(localStorage.getItem('jb_stemmer') || '{}') || {}; } catch (e) { return {}; } },
+    set(poll, val) { try { const m = stemmer.mine(); m[poll] = val; localStorage.setItem('jb_stemmer', JSON.stringify(m)); } catch (e) {} }
+  };
+
+  function visPollar() {
+    const seksjon = $('#pollar');
+    if (pollar === null) { seksjon.hidden = true; return; }
+    seksjon.hidden = false;
+    const ul = $('#pollgrid');
+    ul.innerHTML = '';
+    $('#pollar-tom').hidden = pollar.length > 0;
+    const mine = stemmer.mine();
+    pollar.forEach(pl => {
+      const sum = pl.stemmer.reduce((a, b) => a + b, 0);
+      const maks = Math.max(0, ...pl.stemmer);
+      const li = document.createElement('li');
+      const open = opnaPoll === pl.id;
+      li.className = open ? 'open' : '';
+
+      const topp = document.createElement('button');
+      topp.type = 'button';
+      topp.className = 'poll-topp';
+      topp.setAttribute('aria-expanded', String(open));
+      const sp = document.createElement('span'); sp.className = 'sp'; sp.textContent = pl.sporsmal;
+      const meta = document.createElement('span'); meta.className = 'meta';
+      meta.textContent = (sum === 1 ? '1 stemme' : sum + ' stemmer') + (pl.av ? ' · laga av ' + pl.av : '') + (pl.id in mine ? ' · du har stemt' : '');
+      topp.append(sp, meta);
+      if (!open && sum > 0) {
+        const leiar = document.createElement('span'); leiar.className = 'leiar';
+        const i = pl.stemmer.indexOf(maks);
+        leiar.textContent = (pl.stemmer.filter(x => x === maks).length > 1 ? 'Delt leiing' : 'Leiar: ' + pl.alternativ[i]);
+        topp.append(leiar);
+      }
+      topp.addEventListener('click', () => { opnaPoll = open ? null : pl.id; visPollar(); });
+      li.append(topp);
+
+      if (open) {
+        const kropp = document.createElement('div');
+        kropp.className = 'poll-kropp';
+        pl.alternativ.forEach((alt, i) => {
+          const b = document.createElement('button');
+          b.type = 'button';
+          b.className = 'poll-val';
+          b.setAttribute('aria-pressed', String(mine[pl.id] === i));
+          const pst = sum ? Math.round(pl.stemmer[i] / sum * 100) : 0;
+          const bar = document.createElement('span'); bar.className = 'bar'; bar.style.width = pst + '%';
+          const t = document.createElement('span'); t.textContent = (mine[pl.id] === i ? '✓ ' : '') + alt;
+          const n = document.createElement('span'); n.className = 'n'; n.textContent = pl.stemmer[i] + ' · ' + pst + ' %';
+          b.append(bar, t, n);
+          b.setAttribute('aria-label', alt + ', ' + pl.stemmer[i] + ' stemmer' + (mine[pl.id] === i ? ', ditt val' : ''));
+          b.addEventListener('click', () => stemPaa(pl.id, i, kropp));
+          kropp.append(b);
+        });
+        li.append(kropp);
+      }
+      ul.append(li);
+    });
+  }
+
+  async function stemPaa(id, val, kropp) {
+    if (stemmer.mine()[id] === val) return;
+    kropp.querySelectorAll('button').forEach(b => b.disabled = true);
+    try {
+      const svar = await send({ type: 'stem', poll: id, val, veljar: stemmer.id() });
+      if (svar.ok) stemmer.set(id, val);
+      await oppdaterData();
+    } catch (e) {
+      kropp.querySelectorAll('button').forEach(b => b.disabled = false);
+    }
+  }
+
+  // Lag ein poll
+  function altFelt(verdi) {
+    const i = document.createElement('input');
+    i.type = 'text'; i.maxLength = 60; i.value = verdi || '';
+    i.setAttribute('aria-label', 'Alternativ ' + ($('#poll-alt').children.length + 1));
+    $('#poll-alt').append(i);
+    $('#poll-alt-ny').hidden = $('#poll-alt').children.length >= 6;
+    return i;
+  }
+  function nullstillPoll() {
+    $('#poll-skjema').reset();
+    $('#poll-alt').innerHTML = '';
+    altFelt(); altFelt();
+    $('#poll-melding').innerHTML = '';
+  }
+  function visPollSkjema(vis) {
+    $('#poll-skjema').hidden = !vis;
+    $('#ny-poll-vis').hidden = vis;
+    $('#ny-poll-vis').setAttribute('aria-expanded', String(vis));
+    if (vis) { nullstillPoll(); $('#poll-sp').focus(); }
+  }
+  $('#ny-poll-vis').addEventListener('click', () => visPollSkjema(true));
+  $('#poll-avbryt').addEventListener('click', () => { visPollSkjema(false); $('#ny-poll-vis').focus(); });
+  $('#poll-alt-ny').addEventListener('click', () => altFelt().focus());
+  $('#poll-skjema').addEventListener('submit', async e => {
+    e.preventDefault();
+    const f = e.currentTarget, boks = $('#poll-melding'), knapp = $('#poll-knapp');
+    const sporsmal = f.sporsmal.value.trim();
+    const sett = {};
+    const alternativ = [...$('#poll-alt').querySelectorAll('input')].map(i => i.value.trim())
+      .filter(v => v && !sett[v.toLowerCase()] && (sett[v.toLowerCase()] = true));
+    if (sporsmal.length < 3) { vis(boks, 'feil', [p('Skriv eit spørsmål.')]); f.sporsmal.focus(); return; }
+    if (alternativ.length < 2) { vis(boks, 'feil', [p('Skriv minst to ulike alternativ.')]); return; }
+    knapp.disabled = true;
+    try {
+      const svar = await send({ type: 'poll', sporsmal, alternativ, namn: f.namn.value.trim(), nettside: f.nettside.value });
+      if (!svar.ok) { vis(boks, 'feil', [p('Pollen vart ikkje lagra. Prøv igjen.')]); return; }
+      visPollSkjema(false);
+      opnaPoll = svar.id || null;
+      await oppdaterData();
+    } catch (err) {
+      vis(boks, 'feil', [p('Fekk ikkje kontakt. Sjekk nettet og prøv igjen.')]);
+    } finally {
+      knapp.disabled = false;
+    }
+  });
   function rorsle() { return window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth'; }
 
   const TIPS_FORST = 6;
@@ -843,7 +1096,7 @@ footer { text-align: center; font-family: var(--typemaskin); color: var(--kort-d
     oppdaterNamnFelt();
     pSkjema.epost.value = epost;
     pSkjema.kjem.value = s.kjem === 'Nei' ? 'Nei' : 'Ja';
-    pSkjema.mat.value = s.mat === 'Nei' ? 'Nei' : 'Ja';
+    pSkjema.mat.value = ['Nei', 'Seinare'].indexOf(s.mat) !== -1 ? s.mat : 'Ja';
     pSkjema.allergi.value = s.allergi || '';
     oppdaterKjem();
   }
@@ -858,7 +1111,7 @@ footer { text-align: center; font-family: var(--typemaskin); color: var(--kort-d
     if (s.kjem === 'Nei') {
       boks.append(p('Hei ' + s.namn.split(' ')[0] + '. Du har meldt deg av.'));
     } else {
-      boks.append(p('Hei ' + s.namn.split(' ')[0] + '. Du er påmeld ' + (s.mat === 'Ja' ? 'med mat.' : 'utan mat.')));
+      boks.append(p('Hei ' + s.namn.split(' ')[0] + '. Du er påmeld ' + (s.mat === 'Ja' ? 'med mat.' : s.mat === 'Seinare' ? 'og vel mat seinare.' : 'utan mat.')));
     }
     const ref = p('Referanse: ');
     const r = sterk(s.ref, 'ref'); ref.append(r);
@@ -871,6 +1124,7 @@ footer { text-align: center; font-family: var(--typemaskin); color: var(--kort-d
       case 'Delvis': bet.append(sterk('Delvis betalt', 'manglar'), ': ' + kr(s.innbetalt) + ' av ' + kr(s.forventa) + '. Manglar ' + kr(manglar) + ', betal innan ' + frist + '.'); break;
       case 'For mykje': bet.append(sterk('Betalt', 'betalt'), ': ' + kr(s.innbetalt) + ', som er meir enn ' + kr(s.forventa) + '. ' + config.okonomi + ' sender mellomlegget tilbake.'); break;
       case 'Refunder': bet.append('Du har betalt ' + kr(s.innbetalt) + '. ' + config.okonomi + ' sender pengane tilbake.'); break;
+      case 'Vel mat': bet.append(sterk('Mat ikkje valt', 'manglar'), '. Vel innan ' + fmtKort.format(new Date(config.pameldingsfrist)) + ' med «Endre svaret mitt», så får du beløpet. Vent med å betale til då.'); break;
       default: break;
     }
     if (bet.childNodes.length) boks.append(bet);
@@ -882,7 +1136,7 @@ footer { text-align: center; font-family: var(--typemaskin); color: var(--kort-d
     }
     if (s.kjem !== 'Nei') {
       boks.append(p('Allergiar og kosthald: ' + (s.allergi || 'ingen registrert') + '.'));
-      if (s.status !== 'OK' && s.status !== 'For mykje') {
+      if (s.status !== 'OK' && s.status !== 'For mykje' && s.status !== 'Vel mat') {
         const n = p('Betalingar blir førte inn for hand, så det kan ta nokre dagar før dei syner her.');
         n.className = 'dim'; boks.append(n);
       }
@@ -1031,7 +1285,8 @@ footer { text-align: center; font-family: var(--typemaskin); color: var(--kort-d
         linjer.push(p('Du er meldt av. Har du betalt, sender ' + config.okonomi + ' pengane tilbake.'));
       } else {
         linjer.push(p(svar.ny ? 'Du er påmeld. Referansen din er ' : 'Svaret ditt er oppdatert. Referansen din er ', { sterk: svar.ref }, '.'));
-        linjer.push(p('Betal ' + kr(svar.belop) + ' innan ' + fmtKort.format(new Date(config.betalingsfrist)) +
+        if (data.mat === 'Seinare') linjer.push(p('Vel mat innan ' + fmtKort.format(new Date(config.pameldingsfrist)) + ', så får du beløpet. Vent med å betale til då.'));
+        else linjer.push(p('Betal ' + kr(svar.belop) + ' innan ' + fmtKort.format(new Date(config.betalingsfrist)) +
           ' og skriv referansen i Vipps-meldinga. Kven du skal betale til, står i e-posten.'));
       }
       if (svar.mailOk === false) {
