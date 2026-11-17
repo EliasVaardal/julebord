@@ -823,7 +823,7 @@ footer { text-align: center; font-family: var(--typemaskin); color: var(--kort-d
     $('#mat-seinare-val').hidden = !seinare;
     $('#mat-hjelp').hidden = !seinare;
     // Lenka til matpollen blir berre vist når det finst ein poll om mat.
-    matPoll = seinare ? pollar.find(pl => /\bmat\b|middag|meny|julemat/i.test(pl.sporsmal)) || null : null;
+    matPoll = seinare ? pollar.find(pl => /\bmat\b|\bmeny\b|julemat/i.test(pl.sporsmal)) || null : null;
     $('#mat-poll-lenke').hidden = !matPoll;
   }
   let matPoll = null;
