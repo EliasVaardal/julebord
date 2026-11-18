@@ -78,6 +78,7 @@ body {
 }
 .kort p { margin: 0 auto; max-width: 24ch; font-size: clamp(1.3rem, 5.2vw, 2rem); line-height: 1.45; }
 .kort .liten { font-size: 1rem; color: var(--kort-dim); max-width: 34ch; margin-top: 1.5rem; }
+.kort .liten a { color: var(--kort-tekst); text-underline-offset: 3px; }
 
 /* ---------- PIN-port ---------- */
 #port { min-height: 100svh; }
@@ -396,6 +397,7 @@ footer { text-align: center; font-family: var(--typemaskin); color: var(--kort-d
       <p id="opning-tekst"><span class="typa" aria-hidden="true"></span><span class="lesar" style="position:absolute;left:-9999px"></span></p>
       <p id="nedteljing" role="timer" aria-live="off"></p>
       <a class="knapp-kort" href="#pamelding">Meld deg på</a>
+      <p class="liten" id="poll-hint" hidden><a href="#pollar">Polls er live under</a>, sjekk dei ut eller start ein sjølv.</p>
     </div>
   </section>
 
@@ -822,6 +824,7 @@ footer { text-align: center; font-family: var(--typemaskin); color: var(--kort-d
     // «Vel seinare» krev backend som kjenner valet (same versjon som har pollar).
     const seinare = pollar !== null;
     $('#mat-seinare-val').hidden = !seinare;
+    $('#poll-hint').hidden = !seinare;   // same backend-versjon som har pollar
     $('#mat-hjelp').hidden = !seinare;
     // Lenka til matpollen blir berre vist når det finst ein poll om mat.
     matPoll = seinare ? pollar.find(pl => /\bmat\b|\bmeny\b|julemat/i.test(pl.sporsmal)) || null : null;
