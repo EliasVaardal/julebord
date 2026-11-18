@@ -255,7 +255,7 @@ textarea { min-height: 6rem; resize: vertical; }
 .merke.ingen { color: var(--blekk-dim); }
 
 /* Filmar frå tidlegare år */
-.filmar { max-width: 76rem; margin: 0 auto; padding: 3rem 1rem 4rem; text-align: center; font-family: var(--typemaskin); }
+.filmar { margin: 0; padding: 2rem 0 1rem; text-align: center; font-family: var(--typemaskin); }
 .filmar-tittel { margin: 0 0 2rem; font-size: clamp(1.3rem, 5.2vw, 2rem); }
 .filmgrid { display: grid; gap: 1.75rem; grid-template-columns: repeat(auto-fit, minmax(min(100%, 20rem), 1fr)); }
 .film { margin: 0; }
@@ -606,6 +606,31 @@ footer { text-align: center; font-family: var(--typemaskin); color: var(--kort-d
       </form>
     </section>
 
+    <!-- Filmar frå tidlegare år (YouTube, utan sporingscookies) -->
+    <section class="filmar heil" aria-labelledby="filmar-tittel">
+      <p id="filmar-tittel" class="filmar-tittel">Frå arkivet.</p>
+      <div class="filmgrid">
+        <figure class="film">
+          <iframe src="https://www.youtube-nocookie.com/embed/4tg_qi5I6Zw" title="Julebordet 2025" loading="lazy"
+            allow="accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+            referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+          <figcaption>Julebordet 2025</figcaption>
+        </figure>
+        <figure class="film">
+          <iframe src="https://www.youtube-nocookie.com/embed/a8bSbBPX1s8" title="Julebordet 2024" loading="lazy"
+            allow="accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+            referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+          <figcaption>Julebordet 2024</figcaption>
+        </figure>
+        <figure class="film">
+          <iframe src="https://www.youtube-nocookie.com/embed/HhB8GtF8APg" title="Julebord 2022 (remastered)" loading="lazy"
+            allow="accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+            referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+          <figcaption>Julebord 2022 (remastered)</figcaption>
+        </figure>
+      </div>
+    </section>
+
     <!-- Spørsmål -->
     <section class="ark heil" aria-labelledby="spm-tittel">
       <h2 id="spm-tittel">Spørsmål</h2>
@@ -626,30 +651,6 @@ footer { text-align: center; font-family: var(--typemaskin); color: var(--kort-d
     </section>
   </div>
 
-  <!-- Filmar frå tidlegare år (YouTube, utan sporingscookies) -->
-  <section class="filmar" aria-labelledby="filmar-tittel">
-    <p id="filmar-tittel" class="filmar-tittel">Frå arkivet.</p>
-    <div class="filmgrid">
-      <figure class="film">
-        <iframe src="https://www.youtube-nocookie.com/embed/4tg_qi5I6Zw" title="Julebordet 2025" loading="lazy"
-          allow="accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-          referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
-        <figcaption>Julebordet 2025</figcaption>
-      </figure>
-      <figure class="film">
-        <iframe src="https://www.youtube-nocookie.com/embed/a8bSbBPX1s8" title="Julebordet 2024" loading="lazy"
-          allow="accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-          referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
-        <figcaption>Julebordet 2024</figcaption>
-      </figure>
-      <figure class="film">
-        <iframe src="https://www.youtube-nocookie.com/embed/HhB8GtF8APg" title="Julebord 2022 (remastered)" loading="lazy"
-          allow="accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-          referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
-        <figcaption>Julebord 2022 (remastered)</figcaption>
-      </figure>
-    </div>
-  </section>
 
   <footer>Julebordkomiteen 2026</footer>
 </main>
